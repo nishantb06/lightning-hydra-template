@@ -1,5 +1,7 @@
 from torch import nn
+import timm
 
+import torchvision.transforms as T
 
 class SimpleDenseNet(nn.Module):
     def __init__(
@@ -34,5 +36,31 @@ class SimpleDenseNet(nn.Module):
         return self.model(x)
 
 
+
+class TimmModel(nn.Module):
+    def __init__(
+        self,
+        model_name:str = 'resnet18',
+        num_classes:int  = 10,
+        **kwargs,
+    ) -> None:
+
+        super().__init__()
+
+        self.model = timm.create_model(model_name, pretrained = True,
+                                        num_classes = num_classes,**kwargs)
+    
+    def forward(self,x):
+        try:
+            return self.model(x)
+        except:
+            if x.shape[-1] == 32:
+                transform = T.Resize((224,224))
+                x = transform(x)
+                return self.model(x)
+            else:
+                raise ValueError("Input image size is unidentified")
+
+
 if __name__ == "__main__":
-    _ = SimpleDenseNet()
+    _ = TimmModel()
